@@ -1,1 +1,18 @@
-[]
+[
+    {
+        "order_id": "3388b998",
+        "customer": "Alice",
+        "item": "Latte",
+        "quantity": 2,
+        "total": 8.5,
+        "status": "Cancelled"
+    },
+    {
+        "order_id": "7ff8ef20",
+        "customer": "Alice",
+        "item": "Latte",
+        "quantity": 2,
+        "total": 8.5,
+        "status": "Cancelled"
+    }
+]

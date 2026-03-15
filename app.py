@@ -24,7 +24,7 @@ if orders_file.exists():
 else:
     orders = []
 
-tab1, tab2, tab3, tab4 = st.tabs(["Place Order","View Inventory","Restock","Manage Orders"])
+tab1, tab2, tab3, tab4 = st.tabs(["Place Order", "View Inventory", "Restock", "Manage Orders"])
 
 # ---------------- Place Order ----------------
 with tab1:
@@ -51,12 +51,14 @@ with tab1:
                     st.error("Not enough stock")
                 else:
                     selected_item["stock"] -= quantity
+                    total_price = selected_item["price"] * quantity
 
                     new_order = {
                         "order_id": str(uuid.uuid4())[:8],
                         "customer": customer_name,
                         "item": selected_item_name,
                         "quantity": quantity,
+                        "total": total_price,
                         "status": "Placed"
                     }
 
@@ -69,6 +71,15 @@ with tab1:
                         json.dump(orders, f, indent=4)
 
                     st.success("Order placed successfully!")
+
+                    with st.expander("Order Receipt", expanded=True):
+                        st.write("Order ID:", new_order["order_id"])
+                        st.write("Customer:", new_order["customer"])
+                        st.write("Item:", new_order["item"])
+                        st.write("Quantity:", new_order["quantity"])
+                        st.write("Total:", new_order["total"])
+                        st.write("Status:", new_order["status"])
+
                     time.sleep(1)
                     st.rerun()
 
@@ -76,8 +87,13 @@ with tab1:
 with tab2:
     st.markdown("## View Inventory")
     with st.container(border=True):
+        view_mode = st.radio("View Mode", ["View All", "Search"], horizontal=True, key="view_mode")
 
-        view_mode = st.radio("View Mode",["View All","Search"],horizontal=True,key="view_mode")
+        total_stock = 0
+        for item in inventory:
+            total_stock += item["stock"]
+
+        st.metric("Total Items in Stock", total_stock)
 
         if view_mode == "Search":
             search = st.text_input("Search Item", key="search_item")
@@ -87,15 +103,16 @@ with tab2:
                 if search.lower() in item["name"].lower():
                     filtered_inventory.append(item)
 
+            st.write("Search Results")
             st.dataframe(filtered_inventory)
         else:
+            st.write("Current Inventory")
             st.dataframe(inventory)
 
 # ---------------- Restock ----------------
 with tab3:
     st.markdown("## Restock Inventory")
     with st.container(border=True):
-
         item_names = [item["name"] for item in inventory]
         restock_item = st.selectbox("Select Item", item_names, key="restock_item")
         restock_amount = st.number_input("Amount to Add", min_value=1, step=1, key="restock_amount")
@@ -120,7 +137,6 @@ with tab3:
 with tab4:
     st.markdown("## Manage Orders")
     with st.container(border=True):
-
         active_orders = []
         for order in orders:
             if order["status"] == "Placed":
@@ -128,7 +144,6 @@ with tab4:
 
         if len(active_orders) == 0:
             st.write("No active orders")
-
         else:
             order_options = []
             for order in active_orders:
